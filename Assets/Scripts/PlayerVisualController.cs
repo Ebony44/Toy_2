@@ -15,4 +15,10 @@ public class PlayerVisualController : MonoBehaviour
             playerAnimator.SetBool("isMoving", isMoving);
         }
     }
+
+    public void TestAction(string animKey)
+    {
+        playerAnimator.CrossFade(animKey, 0.1f);
+    }
+
 }
