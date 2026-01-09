@@ -22,7 +22,8 @@ public class PlayerController : NetworkBehaviour
 
     #region player visual variables
 
-    [SerializeField] private Animator playerAnimator;
+    [SerializeField] private PlayerVisualController playerVisualController;
+    // [SerializeField] private Animator playerAnimator;
 
     #endregion
 
@@ -113,6 +114,25 @@ public class PlayerController : NetworkBehaviour
             Vector2 moveDir = moveInput.normalized; // 방향만 추출, 길이 1로 고정
             Vector2 move = moveDir * moveSpeed * Time.deltaTime * moveInput.magnitude; // 입력 세기 반영(아날로그 스틱 등)
             characterTransform.transform.Translate(new Vector3(move.x, 0, move.y));
+
+            //if (moveInput.sqrMagnitude > 0.01f)
+            //{
+            //    // 2D 입력을 3D 방향으로 변환
+            //    Vector3 lookDir = new Vector3(moveDir.x, 0, moveDir.y);
+            //    // Quaternion.LookRotation은 forward 방향을 기준으로 회전 생성
+            //    Quaternion targetRotation = Quaternion.LookRotation(lookDir, Vector3.up);
+            //    characterTransform.transform.rotation = targetRotation;
+            //}
+
+            #region player visual update
+            // Update player visual based on movement
+            if (playerVisualController != null)
+            {
+                bool isMoving = moveInput.magnitude > 0.1f;
+                playerVisualController.UpdateMovementAnimation(isMoving);
+            }
+            
+            #endregion player visual update end
 
         }
     }
