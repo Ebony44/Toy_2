@@ -20,6 +20,13 @@ public class PlayerVisualController : MonoBehaviour
             playerAnimator.SetBool(ANIM_KEY_WALK, isMoving);
         }
     }
+    public void UpdateIdleAnimation()
+    {
+        if (playerAnimator != null)
+        {
+            playerAnimator.Play("Idle");
+        }
+    }
 
     public void TestAction(string animKey)
     {

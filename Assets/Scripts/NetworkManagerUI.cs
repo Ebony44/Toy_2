@@ -57,7 +57,7 @@ public class NetworkManagerUI : MonoBehaviour
     public void SetupOwnershipButton()
     {
         // giveOwnerShipButton.onClick.AddListener(GiveOwnershipTo);
-
+        Debug.Log("[SetupOwnershipButton], Setting up Give Ownership button");
         if (NetworkManager.Singleton == null)
         {
             Debug.LogError("NetworkManager.Singleton is null");

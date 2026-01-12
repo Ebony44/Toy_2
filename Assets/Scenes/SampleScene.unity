@@ -1914,6 +1914,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
+  rotationSpeed: 10
   characterTransform: {fileID: 1274076911}
   bIsMovementEnabled: 0
   playerVisualController: {fileID: 0}
@@ -3181,6 +3182,7 @@ GameObject:
   - component: {fileID: 4255835150667697113}
   - component: {fileID: 4255835150667697114}
   - component: {fileID: 4255835150667697115}
+  - component: {fileID: 4255835150667697116}
   m_Layer: 0
   m_Name: X Bot_Dummy
   m_TagString: Untagged
@@ -3441,6 +3443,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
+  rotationSpeed: 10
   characterTransform: {fileID: 4255835150667697115}
   bIsMovementEnabled: 0
   playerVisualController: {fileID: 4255835150667697114}
@@ -3504,6 +3507,21 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &4255835150667697116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3477925883088146796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
+  TransitionStateInfoList: []
+  m_Animator: {fileID: 4255835150667697111}
 --- !u!1 &4370162798149231300
 GameObject:
   m_ObjectHideFlags: 0

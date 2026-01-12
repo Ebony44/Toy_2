@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : NetworkBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float rotationSpeed = 10f;
     private Vector2 moveInput;
 
     // [NonSerialized] public Vector3 movementInput; //Initial input coming from the Protagonist script
@@ -106,23 +107,44 @@ public class PlayerController : NetworkBehaviour
     {
         if (bIsMovementEnabled)
         {
-            Debug.Log("Player is moving");
+
+            //// if moveInput is not zero
+            //if (moveInput == Vector2.zero)
+            //{
+
+            //    return;
+            //}
+
+            // Debug.Log("Player is moving");
             //// Add movement logic here
             //Vector2 move = moveInput * moveSpeed * Time.deltaTime;
             //characterTransform.transform.Translate(new Vector3(move.x, 0, move.y));
 
             Vector2 moveDir = moveInput.normalized; // 방향만 추출, 길이 1로 고정
             Vector2 move = moveDir * moveSpeed * Time.deltaTime * moveInput.magnitude; // 입력 세기 반영(아날로그 스틱 등)
-            characterTransform.transform.Translate(new Vector3(move.x, 0, move.y));
+            characterTransform.transform.Translate(new Vector3(move.x, 0, move.y),Space.World);
 
-            //if (moveInput.sqrMagnitude > 0.01f)
-            //{
-            //    // 2D 입력을 3D 방향으로 변환
-            //    Vector3 lookDir = new Vector3(moveDir.x, 0, moveDir.y);
-            //    // Quaternion.LookRotation은 forward 방향을 기준으로 회전 생성
-            //    Quaternion targetRotation = Quaternion.LookRotation(lookDir, Vector3.up);
-            //    characterTransform.transform.rotation = targetRotation;
-            //}
+            // rotation code
+            if (moveInput.sqrMagnitude > 0.01f)
+            {
+                // 2D 입력을 3D 방향으로 변환
+                Vector3 lookDir = new Vector3(moveDir.x, 0, moveDir.y);
+                // Quaternion.LookRotation은 forward 방향을 기준으로 회전 생성
+                Quaternion targetRotation = Quaternion.LookRotation(lookDir, Vector3.up);
+
+                // characterTransform.transform.rotation = targetRotation;
+
+                // interpolate the rotation
+                characterTransform.transform.rotation = Quaternion.Lerp(
+                characterTransform.transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+                );
+
+
+            }
+
+            // rotation code end
 
             #region player visual update
             // Update player visual based on movement
