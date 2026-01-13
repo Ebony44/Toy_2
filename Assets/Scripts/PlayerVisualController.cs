@@ -12,6 +12,7 @@ public class PlayerVisualController : MonoBehaviour
 
     // private const string ANIM_KEY_IDLE = "Idle";
     private const string ANIM_KEY_WALK = "IsWalking";
+    private const string ANIM_KEY_DASH = "IsDashing";
 
     public void UpdateMovementAnimation(bool isMoving)
     {
@@ -25,6 +26,20 @@ public class PlayerVisualController : MonoBehaviour
         if (playerAnimator != null)
         {
             playerAnimator.Play("Idle");
+        }
+    }
+    public void PlayAnimationWithName(string animName)
+    {
+        if (playerAnimator != null)
+        {
+            playerAnimator.Play(animName);
+        }
+    }
+    public void SetBoolAnimationWithName(string animName, bool value)
+    {
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetBool(animName, value);
         }
     }
 
