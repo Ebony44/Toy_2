@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class ProjectileManager : NetworkBehaviour
+public class ProjectileManager_Obsolete : NetworkBehaviour
 {
     private NetworkList<ProjectileInfo> projectileInfos;
 
@@ -22,10 +22,19 @@ public class ProjectileManager : NetworkBehaviour
     private float lastSyncTime = 0f;
     #endregion
 
+    // client request or host invoke...
+    // adding projectileInfos
+    // NetworkList changed event will call
+    // -> SpawnVisualProjectile
+    // then objectpool's Get() to spawn visual projectile
+
 
     private void Awake()
     {
-        projectileInfos = new NetworkList<ProjectileInfo>();
+        projectileInfos = new NetworkList<ProjectileInfo>(default,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server
+            );
 
         projectilePool = new ObjectPool<GameObject>(
             createFunc: () => Instantiate(projectilePrefab),
@@ -38,6 +47,13 @@ public class ProjectileManager : NetworkBehaviour
         );
 
     }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        projectileInfos.Dispose();
+    }
+    
 
     public override void OnNetworkSpawn()
     {
@@ -62,17 +78,40 @@ public class ProjectileManager : NetworkBehaviour
     #region Server side updates
     private int _nextId = 0;
 
-    public void FireProjectile(Vector2 spawnPosition, Vector2 velocity, ushort projectileTypeId)
+    public void FireProjectile(ProjectileInfo paramInfo)
     {
         if (!IsServer) return;
+        var newProjectileInfo = paramInfo;
+        newProjectileInfo.projectileId = _nextId++;
+        projectileInfos.Add(newProjectileInfo);
+    }
+
+    public void FireProjectile(Vector2 spawnPosition, Vector2 velocity, ushort projectileTypeId)
+    {
+        //if (!IsServer) return;
+        //var newProjectileInfo = new ProjectileInfo
+        //{
+        //    ProjectileTypeId = projectileTypeId,
+        //    projectileId = _nextId++,
+        //    SpawnPosition = spawnPosition,
+        //    Velocity = velocity,
+        //    currentLifeTime = 0f,
+        //    lifeTime = 2f,
+        //};
+        //projectileInfos.Add(newProjectileInfo);
+
+        // refactor with above method
         var newProjectileInfo = new ProjectileInfo
         {
             ProjectileTypeId = projectileTypeId,
-            projectileId = _nextId++,
             SpawnPosition = spawnPosition,
-            Velocity = velocity
+            Velocity = velocity,
+            currentLifeTime = 0f,
+            lifeTime = 2f,
         };
-        projectileInfos.Add(newProjectileInfo);
+        FireProjectile(newProjectileInfo);
+
+
     }
     public void OnProjectileHit(int projectileId)
     {
@@ -80,6 +119,9 @@ public class ProjectileManager : NetworkBehaviour
         // method name should be changed?
 
         if (!IsServer) return;
+
+        Debug.Log($"Projectile {projectileId} hit something or expired.");
+
         // Find the index of the projectile with the given projectileId
         int indexToRemove = -1;
         for (int i = 0; i < projectileInfos.Count; i++)
@@ -102,6 +144,10 @@ public class ProjectileManager : NetworkBehaviour
 
     private void FixedUpdate()
     {
+        if(!IsServer) return;
+
+
+
         for (int i = projectileInfos.Count - 1; i >= 0; i--)
         {
             var info = projectileInfos[i];
@@ -109,6 +155,7 @@ public class ProjectileManager : NetworkBehaviour
             info.currentLifeTime += Time.fixedDeltaTime;
             if (info.lifeTime > 0f && info.currentLifeTime >= info.lifeTime)
             {
+                Debug.Log($"Projectile ID {info.projectileId} expired after {info.currentLifeTime} seconds.");
                 OnProjectileHit(info.projectileId);
                 continue;
             }
@@ -123,6 +170,7 @@ public class ProjectileManager : NetworkBehaviour
             {
                 // Hit something
                 // OnProjectileHit(info.projectileId);
+                Debug.Log($"Projectile ID {info.projectileId} hit {hitInfo.collider.name} at position {hitInfo.point}");
                 HandleServerSideHit(hitInfo, info.projectileId, i);
                 continue; // Skip updating position since projectile is removed
             }
@@ -130,8 +178,16 @@ public class ProjectileManager : NetworkBehaviour
             {
                 // move projectile
                 // info.SpawnPosition += direction * moveDistance;
+                Debug.Log($"Projectile ID {info.projectileId} moving from {info.SpawnPosition} by {info.Velocity * Time.fixedDeltaTime}");
+                Debug.Log($"Before: {projectileInfos[i].SpawnPosition}");
                 info.SpawnPosition += info.Velocity * Time.fixedDeltaTime;
+                Debug.Log($"After: {info.SpawnPosition}");
+                Debug.Log($"Is dirty before assignment? " + projectileInfos.IsDirty());
                 projectileInfos[i] = info;
+
+                Debug.Log($"Updated projectile ID {projectileInfos[i].projectileId} position to {projectileInfos[i].SpawnPosition}"
+                    + " is dirty? " + projectileInfos.IsDirty()
+                    );
             }
 
 
@@ -252,6 +308,14 @@ public class ProjectileManager : NetworkBehaviour
                     lastSyncTime = Time.time;
                     break;
                 }
+            //case NetworkListEvent<ProjectileInfo>.EventType.Value:
+            //    {
+            //        Debug.LogWarning("ProjectileInfo Value change event not handled.");
+            //        //var updatedInfo = changeEvent.Value;
+            //        //previousPositions[updatedInfo.projectileId] = updatedInfo.SpawnPosition;
+            //        //lastSyncTime = Time.time;
+            //        break;
+            //    }
                 // Handle other event types if necessary
         }
     }
@@ -281,7 +345,12 @@ public class ProjectileManager : NetworkBehaviour
         visual.transform.position = newProjectileInfo.SpawnPosition;
         visual.transform.rotation = Quaternion.LookRotation(newProjectileInfo.Velocity.normalized);
 
+
         visualProjectiles[newProjectileInfo.projectileId] = visual;
+        Debug.Log($"Spawning visual projectile ID {newProjectileInfo.projectileId} at {newProjectileInfo.SpawnPosition} "
+            + " count of visualProjectiles: " + visualProjectiles.Count
+            + " count of projectileInfos: " + projectileInfos.Count
+            );
 
         //GameObject visual = Instantiate(projectilePrefab, newProjectileInfo.SpawnPosition, Quaternion.identity);
         //if(index >= projectileInfos.Count)
@@ -306,12 +375,28 @@ public class ProjectileManager : NetworkBehaviour
         {
             Debug.LogError("Only the server can fire projectiles.");
         }
-        // 예시 값: (0,0) 위치에서 (1,2) 방향으로 속도 10, 타입 0
+        
         Vector2 spawnPosition = Vector2.zero;
-        Vector2 velocity = new Vector2(1, 2).normalized * 10f;
+        Vector2 velocity = new Vector2(1, 2).normalized * 4f;
         ushort projectileTypeId = 0;
 
         FireProjectile(spawnPosition, velocity, projectileTypeId);
     }
+
+
+    [Rpc(SendTo.Server)]
+    public void FireRequestFromClientRpc(Vector2 spawnPosition, Vector2 velocity, ushort projectileTypeId)
+    {
+        if (!IsServer)
+        {
+            Debug.Log("FireRequestFromClientRpc called on non-server instance.");
+        }
+        else
+        {
+            Debug.Log("FireRequestFromClientRpc received on server.");
+        }
+        FireProjectile(spawnPosition, velocity, projectileTypeId);
+    }
+
 
 }
