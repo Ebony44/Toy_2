@@ -167,6 +167,17 @@ public class PlayerController : NetworkBehaviour
             + " is owner: " + IsOwner);
     }
 
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        // Dash logic here?
+        // if moveinput is not zero
+        // moveinput with modifier?
+
+        // if moveinput is zero
+        // follow mouse direction?
+    }
+
+
     public void GiveOwnershipTo(ulong clientId)
     {
         if (IsServer)
