@@ -9,6 +9,11 @@ public class PlayerController : NetworkBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float rotationSpeed = 10f;
+
+    [SerializeField] private float dashSpeed = 20f;
+    [SerializeField] private float dashDuration = 0.2f;
+    private bool isDashing = false;
+
     private Vector2 moveInput;
 
     // [NonSerialized] public Vector3 movementInput; //Initial input coming from the Protagonist script
@@ -167,15 +172,78 @@ public class PlayerController : NetworkBehaviour
             + " is owner: " + IsOwner);
     }
 
+    //public void OnDash(InputAction.CallbackContext context)
+    //{
+    //    if(context.phase == InputActionPhase.Performed)
+    //    {
+    //        Debug.Log("Dash performed");
+    //    }
+
+    //}
+
     public void OnDash(InputAction.CallbackContext context)
     {
+        // 이미 대시 중이거나 이동 불가능한 상태라면 무시
+        if (isDashing || !IsOwner || !bIsMovementEnabled) return;
+
+        // 버튼 입력 확인
+        // if (context.ReadValueAsButton())
+        if (context.phase == InputActionPhase.Performed)
+        {
+            StartCoroutine(PerformDash());
+        }
+
+
         // Dash logic here?
         // if moveinput is not zero
         // moveinput with modifier?
 
         // if moveinput is zero
         // follow mouse direction?
+
     }
+
+    private System.Collections.IEnumerator PerformDash()
+    {
+        isDashing = true;
+        bool wasMovementEnabled = bIsMovementEnabled;
+        bIsMovementEnabled = false; // 대시 중 일반 이동 차단
+
+        Vector3 dashDirection = transform.forward; // 기본값: 현재 정면
+
+        // 마우스 위치로 방향 계산
+        if (Camera.main != null && Mouse.current != null)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Plane groundPlane = new Plane(Vector3.up, transform.position); // 플레이어 높이 기준 평면
+
+            if (groundPlane.Raycast(ray, out float enter))
+            {
+                Vector3 hitPoint = ray.GetPoint(enter);
+                Vector3 direction = hitPoint - transform.position;
+                direction.y = 0; // 수직 이동 방지
+
+                if (direction.sqrMagnitude > 0.01f)
+                {
+                    dashDirection = direction.normalized;
+                }
+            }
+        }
+
+        // 대시 방향으로 회전 (선택 사항)
+        characterTransform.transform.rotation = Quaternion.LookRotation(dashDirection, Vector3.up);
+
+        float startTime = Time.time;
+        while (Time.time < startTime + dashDuration)
+        {
+            characterTransform.transform.Translate(dashDirection * dashSpeed * Time.deltaTime, Space.World);
+            yield return null;
+        }
+
+        bIsMovementEnabled = wasMovementEnabled;
+        isDashing = false;
+    }
+
 
 
     public void GiveOwnershipTo(ulong clientId)
