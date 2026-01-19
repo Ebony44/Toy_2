@@ -4,6 +4,7 @@ using Unity.Netcode.Components;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -22,7 +23,8 @@ public class PlayerController : NetworkBehaviour
 
     [SerializeField] private NetworkTransform characterTransform;
 
-    private InputSystem_Actions controls; // Name depends on what you named your asset
+    // private InputSystem_Actions controls; // Name depends on what you named your asset
+    private GameInput controls;
 
     public bool bIsMovementEnabled = false;
 
@@ -36,9 +38,10 @@ public class PlayerController : NetworkBehaviour
 
     private void Awake()
     {
-        controls = new InputSystem_Actions();
-        
-        
+        // controls = new InputSystem_Actions();
+        controls = new GameInput();
+
+
     }
     private void Start()
     {
@@ -49,13 +52,26 @@ public class PlayerController : NetworkBehaviour
     {
         controls.Enable();
         // Subscribe to the move action
-        controls.Player.Move.performed += ctx => OnMove(ctx);
-        controls.Player.Move.canceled += ctx => OnMove(ctx);
+        //controls.Player.Move.performed += ctx => OnMove(ctx);
+        //controls.Player.Move.canceled += ctx => OnMove(ctx);
+
+        controls.Gameplay.Move.performed += ctx => OnMove(ctx);
+        controls.Gameplay.Move.canceled += ctx => OnMove(ctx);
+
+        controls.Gameplay.Utility.performed += ctx => OnDash(ctx);
+        
+
     }
     private void OnDisable()
     {
-        controls.Player.Move.performed -= ctx => OnMove(ctx);
-        controls.Player.Move.canceled -= ctx => OnMove(ctx);
+        //controls.Player.Move.performed -= ctx => OnMove(ctx);
+        //controls.Player.Move.canceled -= ctx => OnMove(ctx);
+
+        controls.Gameplay.Move.performed -= ctx => OnMove(ctx);
+        controls.Gameplay.Move.canceled -= ctx => OnMove(ctx);
+
+        controls.Gameplay.Utility.performed -= ctx => OnDash(ctx);
+
         controls.Disable();
 
         // GameManager.Instance.OnNetWorkPostSpawned -= OnNetworkPostSpawnedHandler;
@@ -203,32 +219,49 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    private System.Collections.IEnumerator PerformDash()
+    private IEnumerator PerformDash()
     {
+        Debug.Log("PerformDash called");
+        if(isDashing)
+        {
+            yield break; // 이미 대시 중이면 종료
+        }
+
         isDashing = true;
         bool wasMovementEnabled = bIsMovementEnabled;
         bIsMovementEnabled = false; // 대시 중 일반 이동 차단
 
         Vector3 dashDirection = transform.forward; // 기본값: 현재 정면
 
-        // 마우스 위치로 방향 계산
-        if (Camera.main != null && Mouse.current != null)
+        #region with mouse direction
+        //// 마우스 위치로 방향 계산
+        //if (Camera.main != null && Mouse.current != null)
+        //{
+        //    Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        //    Plane groundPlane = new Plane(Vector3.up, transform.position); // 플레이어 높이 기준 평면
+
+        //    if (groundPlane.Raycast(ray, out float enter))
+        //    {
+        //        Vector3 hitPoint = ray.GetPoint(enter);
+        //        Vector3 direction = hitPoint - transform.position;
+        //        direction.y = 0; // 수직 이동 방지
+
+        //        if (direction.sqrMagnitude > 0.01f)
+        //        {
+        //            dashDirection = direction.normalized;
+        //        }
+        //    }
+        //}
+        #endregion
+
+        #region current move input direction
+        // 현재 이동 입력 방향 사용
+        Vector2 moveDir = moveInput.normalized;
+        if (moveInput.sqrMagnitude > 0.01f)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            Plane groundPlane = new Plane(Vector3.up, transform.position); // 플레이어 높이 기준 평면
-
-            if (groundPlane.Raycast(ray, out float enter))
-            {
-                Vector3 hitPoint = ray.GetPoint(enter);
-                Vector3 direction = hitPoint - transform.position;
-                direction.y = 0; // 수직 이동 방지
-
-                if (direction.sqrMagnitude > 0.01f)
-                {
-                    dashDirection = direction.normalized;
-                }
-            }
+            dashDirection = new Vector3(moveDir.x, 0, moveDir.y);
         }
+        #endregion
 
         // 대시 방향으로 회전 (선택 사항)
         characterTransform.transform.rotation = Quaternion.LookRotation(dashDirection, Vector3.up);
@@ -255,5 +288,24 @@ public class PlayerController : NetworkBehaviour
             networkObject.ChangeOwnership(clientId);
         }
     }
+
+    public void TestMethod(InputAction.CallbackContext context)
+    {
+
+        if(context.control.device is Gamepad)
+        {
+
+        }
+        else if(context.control.device is Keyboard)
+        {
+
+        }
+        //  RpcParams
+        // Q E R C // Z X
+        // util and subutil
+        // util and subutil are only one at a time each
+        // 1 2
+    }
+
 
 }
