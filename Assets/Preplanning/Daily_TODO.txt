@@ -1,13 +1,3 @@
-0118 to 0124
+0120
 
-implement skill and utility
-// Q E R C 
-// Z X
-// util and subutil
-// util and subutil are only one at a time each
-// 1 2
-
-
-
-0109
-translate sync problem with rotation
+On lunch, install boss room sample. to check netcode for gameobjects practice.
