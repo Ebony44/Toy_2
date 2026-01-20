@@ -1,3 +1,0 @@
-0120
-
-On lunch, install boss room sample. to check netcode for gameobjects practice.
