@@ -9,5 +9,14 @@ implement skill and utility
 
 
 
+
+
 0109
 translate sync problem with rotation
+
+
+
+someday
+
+Unity Animation Event system - attack and parry system for melee combat? 
+other project methods are called at mid of animation frame...? (for not instant parry and can cancel attack at mid animation?)
