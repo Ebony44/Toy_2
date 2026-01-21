@@ -1,0 +1,16 @@
+When to AVOID Interpolation
+
+    Your Own Player: You don't want to see your own character 100ms in the past. This is why local players use Client-Side Prediction instead.
+
+    Instant Hits: If a bullet hits a wall, you want the explosion to happen exactly where it hit, not a smoothed version that might look like it floated through the wall.
+
+
+dead reckoning is a technique used in networked games to predict the position of moving objects between updates from the server. Instead of waiting for the server to send the exact position of an object, the client estimates where the object should be based on its last known position, velocity, and direction.
+
+When should you use it?
+
+    High-speed projectiles: If a rocket is flying in a straight line, dead reckoning is perfect because the velocity is constant.
+
+    Unreliable Connections: If your players have "jittery" internet, dead reckoning prevents the character from freezing in place every time a packet is lost.
+
+    Physics-heavy games: When you need the client-side physics to feel immediate rather than delayed by 100ms.

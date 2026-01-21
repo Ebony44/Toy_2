@@ -1,11 +1,13 @@
 0118 to 0124
 
-implement skill and utility
+- implement skill and utility
 // Q E R C 
 // Z X
 // util and subutil
 // util and subutil are only one at a time each
 // 1 2
+
+- navmesh agent for npc movement
 
 
 
@@ -20,3 +22,6 @@ someday
 
 Unity Animation Event system - attack and parry system for melee combat? 
 other project methods are called at mid of animation frame...? (for not instant parry and can cancel attack at mid animation?)
+
+override controller, from base controller? file extension is .overrideController
+from boss room sample project

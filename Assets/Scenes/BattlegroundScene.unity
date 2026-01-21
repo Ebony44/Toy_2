@@ -1346,7 +1346,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.ProbeVolume
   mode: 1
-  size: {x: 0.01, y: 0.01, z: 0.01}
+  size: {x: 3, y: 3, z: 3}
   overrideRendererFilters: 0
   minRendererVolumeSize: 0.1
   objectLayerMask:
@@ -2342,6 +2342,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
   rotationSpeed: 10
+  dashSpeed: 20
+  dashDuration: 0.2
   characterTransform: {fileID: 1274076911}
   bIsMovementEnabled: 0
   playerVisualController: {fileID: 0}
@@ -3977,6 +3979,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5
   rotationSpeed: 10
+  dashSpeed: 20
+  dashDuration: 0.2
   characterTransform: {fileID: 4255835150667697115}
   bIsMovementEnabled: 0
   playerVisualController: {fileID: 4255835150667697114}
