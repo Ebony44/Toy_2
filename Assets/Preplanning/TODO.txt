@@ -1,3 +1,9 @@
+0311
+
+on my own, recreate npc movement logic
+-> using SetDestination, Unity will take control of path finding
+-> Server must have authority over npc movement, so recreate npc movement logic on server, and sync position to clients
+
 0118 to 0124
 
 - implement skill and utility

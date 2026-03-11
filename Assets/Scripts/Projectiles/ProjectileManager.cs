@@ -140,6 +140,8 @@ public class ProjectileManager : NetworkBehaviour
                     HandleHit(id, hit);
                     // idsToRemove.Add(id); // 삭제 예정 목록에 추가
                     cachedIdsToRemove.Add(id);
+                    Debug.Log($"[Server] Projectile {id} hit something and will be removed." +
+                        $" how far it moved: {moveDistance}, hit point: {hit.point}, hit collider: {hit.collider.name}");
                 }
             }
         }
@@ -163,6 +165,14 @@ public class ProjectileManager : NetworkBehaviour
     {
         Debug.Log($"[Server] Projectile {id} hit {hit.collider.name}");
         // 데미지 처리 로직...
+
+        var current = activeProjectiles[id];
+        // TODO: particle, sound effect, etc. (should using RPC to trigger on clients?)
+        // HandleHitFromClientRpc(current.Info.SpawnPosition, hit.point, current.Info.ProjectileTypeId);
+
+        // remove projectile after hit
+        DestroyProjectileRpc(id);
+
     }
 
     // 3. [Server & Client] 제거 지시
