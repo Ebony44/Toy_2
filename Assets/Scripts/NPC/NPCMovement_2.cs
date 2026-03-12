@@ -55,4 +55,10 @@ public class NPCMovement_2 : NetworkBehaviour
         if (m_NavPath != null)
             m_NavPath.Dispose();
     }
+
+    public void FollowTransform(Transform followTransform)
+    {
+        m_NavPath?.FollowTransform(followTransform);
+    }
+
 }

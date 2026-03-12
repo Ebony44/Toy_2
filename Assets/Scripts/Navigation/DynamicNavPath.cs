@@ -8,6 +8,14 @@ namespace Navigation
 {
     public sealed class DynamicNavPath : IDisposable
     {
+
+        // nav workflow
+        // FollowTransform, for moving target
+        // SetTargetPosition, for fixed object
+
+        // from MoveAlongPath method, get vector and used from physics or animations
+        //
+
         /// <summary>
         /// The tolerance to decide whether the path needs to be recalculated when the position of a target transform changed.
         /// </summary>
@@ -67,6 +75,9 @@ namespace Navigation
         public void FollowTransform(Transform target)
         {
             m_TransformTarget = target;
+            // call this again outside when
+            // 1. target is changed
+            // 2. knocked back on chasing
         }
 
         /// <summary>
@@ -76,6 +87,7 @@ namespace Navigation
         public void SetTargetPosition(Vector3 target)
         {
             // If there is an nav mesh area close to the target use a point inside the nav mesh instead.
+            // when to use -> if target point is out of nav mesh area...
             if (NavMesh.SamplePosition(target, out NavMeshHit hit, 2f, NavMesh.AllAreas))
             {
                 target = hit.position;
