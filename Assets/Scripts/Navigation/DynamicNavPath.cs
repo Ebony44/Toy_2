@@ -111,6 +111,8 @@ namespace Navigation
         /// </summary>
         public void Clear()
         {
+            // used it charge, knockback, or stop chasing...
+            // movement is forced case...
             m_Path.Clear();
         }
 

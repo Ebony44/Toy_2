@@ -30,6 +30,10 @@ public class NPCMovement_2 : NetworkBehaviour
     private float m_SpecialModeDurationRemaining;
     private Vector3 m_KnockbackVector;
 
+    // temp variables
+    [SerializeField] private float baseMoveSpeed = 3f;
+
+
     // 초기화: Start() 대신 OnNetworkSpawn()을 사용합니다.
     public override void OnNetworkSpawn()
     {
@@ -56,9 +60,44 @@ public class NPCMovement_2 : NetworkBehaviour
             m_NavPath.Dispose();
     }
 
+    private void FixedUpdate()
+    {
+
+        PerformMovement();
+    }
+    private void PerformMovement()
+    {
+        if (m_MovementState == MovementState.Idle)
+            return;
+
+        Vector3 movementVector;
+        var desiredMovementAmount = baseMoveSpeed * Time.fixedDeltaTime;
+        movementVector = m_NavPath.MoveAlongPath(desiredMovementAmount);
+    }
+
     public void FollowTransform(Transform followTransform)
     {
         m_NavPath?.FollowTransform(followTransform);
+    
     }
+
+
+    public void StartForwardCharge(float speed, float duration)
+    {
+        m_NavPath.Clear();
+        m_MovementState = MovementState.Charging;
+        m_ForcedSpeed = speed;
+        m_SpecialModeDurationRemaining = duration;
+    }
+
+    public void StartKnockback(Vector3 knocker, float speed, float duration)
+    {
+        m_NavPath.Clear();
+        m_MovementState = MovementState.Knockback;
+        m_KnockbackVector = transform.position - knocker;
+        m_ForcedSpeed = speed;
+        m_SpecialModeDurationRemaining = duration;
+    }
+
 
 }
