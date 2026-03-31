@@ -33,17 +33,25 @@ public class NPCMovement_2 : NetworkBehaviour
     // temp variables
     [SerializeField] private float baseMoveSpeed = 3f;
 
+    // 타겟 도달 감지용
+    [SerializeField] private float targetReachedDistance = 0.5f; // 도달 판정 거리
+    private Transform m_CurrentTarget;
+    private EnemySpawner m_Spawner; // 스포너 참조
+
+
 
     // 초기화: Start() 대신 OnNetworkSpawn()을 사용합니다.
     public override void OnNetworkSpawn()
     {
-        if (IsServer) // 이 스크립트는 서버에서만 돌아갑니다!
+        // if (IsServer) // 이 스크립트는 서버에서만 돌아갑니다!
+        if(NetworkManager.Singleton.IsServer)
         {
             enabled = true;
             m_NavMeshAgent.enabled = true;
 
             // 네비게이션 시스템 찾기
-            m_NavigationSystem = GameObject.FindGameObjectWithTag(NavigationSystem.NavigationSystemTag).GetComponent<NavigationSystem>();
+            // m_NavigationSystem = GameObject.FindGameObjectWithTag(NavigationSystem.NavigationSystemTag).GetComponent<NavigationSystem>();
+            m_NavigationSystem = GetComponent<NavigationSystem>(); // 같은 게임 오브젝트에 있다고 가정
 
             // DynamicNavPath 초기화 (이전 질문에서 본 그 클래스)
             m_NavPath = new DynamicNavPath(m_NavMeshAgent, m_NavigationSystem);
@@ -64,7 +72,45 @@ public class NPCMovement_2 : NetworkBehaviour
     {
 
         PerformMovement();
+        CheckTargetReached();
     }
+
+    /// <summary>
+    /// 타겟에 도달했는지 체크 (테스트용)
+    /// </summary>
+    private void CheckTargetReached()
+    {
+        if (!IsServer || m_CurrentTarget == null) return;
+
+        float distanceToTarget = Vector3.Distance(transform.position, m_CurrentTarget.position);
+
+        if (distanceToTarget <= targetReachedDistance)
+        {
+            Debug.Log($"[NPCMovement_2] Enemy reached target! Distance: {distanceToTarget}. Returning to pool.");
+            ReturnToPool();
+        }
+    }
+
+    /// <summary>
+    /// 풀로 반환 (테스트용)
+    /// </summary>
+    private void ReturnToPool()
+    {
+        if (m_Spawner != null)
+        {
+            m_CurrentTarget = null;
+            m_MovementState = MovementState.Idle;
+            m_NavPath.Clear();
+
+            m_Spawner.ReturnEnemyToPool(GetComponent<NetworkObject>());
+        }
+        else
+        {
+            Debug.LogWarning("[NPCMovement_2] Spawner reference not found!");
+        }
+    }
+
+
     private void PerformMovement()
     {
         if (m_MovementState == MovementState.Idle)
