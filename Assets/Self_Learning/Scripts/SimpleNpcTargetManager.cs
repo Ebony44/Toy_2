@@ -8,6 +8,7 @@ namespace Learning
     {
         [SerializeField] private SimpleNpcSpawnManager m_SpawnManager;
 
+        // NPCAttackController
         private void Awake()
         {
             if (m_SpawnManager == null)

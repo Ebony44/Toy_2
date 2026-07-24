@@ -96,7 +96,7 @@ namespace Learning
             m_TargetObjectId.Value = 0;
         }
 
-        private bool TryGetTargetTransform(out Transform targetTransform)
+        public bool TryGetTargetTransform(out Transform targetTransform)
         {
             targetTransform = null;
 
